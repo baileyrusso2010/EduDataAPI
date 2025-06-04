@@ -48,7 +48,7 @@ AssessmentResult.init(
 
 // Relations
 AssessmentResult.belongsTo(Student, { foreignKey: "student_id" })
-AssessmentResult.belongsTo(Assessment, { foreignKey: "assessment_id" })
+AssessmentResult.belongsTo(Assessment, { foreignKey: "assessment_id", as: "assessment" })
 
 Student.hasMany(AssessmentResult, { foreignKey: "student_id" })
 Assessment.hasMany(AssessmentResult, { foreignKey: "assessment_id" })

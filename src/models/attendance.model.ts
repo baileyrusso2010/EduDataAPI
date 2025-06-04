@@ -19,6 +19,18 @@ Attendance.init(
             type: DataTypes.DATEONLY,
             allowNull: false,
         },
+        school_year: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        course_name: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        term_name: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
         period: {
             type: DataTypes.STRING,
             allowNull: false,
