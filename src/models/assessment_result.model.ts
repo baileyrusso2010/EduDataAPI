@@ -13,6 +13,7 @@ export class AssessmentResult extends Model {
         maxPoints: number
         earnedPoints: number
     }[]
+    declare assessment?: Assessment
 }
 
 AssessmentResult.init(

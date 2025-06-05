@@ -21,7 +21,7 @@ Attendance.init(
         },
         school_year: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
         },
         course_name: {
             type: DataTypes.STRING,

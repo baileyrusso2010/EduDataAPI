@@ -1,6 +1,9 @@
 import { Model, DataTypes } from "sequelize"
 import sequelize from "../database"
 import { School } from "./school.model"
+import { AssessmentResult } from "./assessment_result.model"
+import { BehaviorRecord } from "./behavior.model"
+import { Student_flags } from "./student_flags.model"
 
 export class Student extends Model {
     declare id: number
@@ -11,8 +14,15 @@ export class Student extends Model {
     declare email: string
     declare ethnicity: string
     declare school_id: number
+    declare AssessmentResults?: AssessmentResult[] // This allows `student.AssessmentResults`
+    declare behaviors?: BehaviorRecord[]
+    declare flags?: Student_flags
 }
 
+//    + ',' + 'Teacher First Name'
+// + ',' + 'Teacher Last Name'
+// + ',' + 'Teacher Email'
+// + ',' + 'Teacher Person ID'
 Student.init(
     {
         id: {

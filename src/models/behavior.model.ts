@@ -43,5 +43,5 @@ BehaviorRecord.init(
 )
 
 // Associations
+Student.hasMany(BehaviorRecord, { foreignKey: "student_id", as: "behaviors" })
 BehaviorRecord.belongsTo(Student, { foreignKey: "student_id" })
-Student.hasMany(BehaviorRecord, { foreignKey: "student_id" })

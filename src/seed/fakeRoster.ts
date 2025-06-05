@@ -49,6 +49,15 @@ async function generateFakeAttendance() {
                 student_id: student.id,
                 date,
                 period: `Period ${period}`,
+                course_name: faker.helpers.arrayElement([
+                    "Math",
+                    "English",
+                    "Science",
+                    "History",
+                    "Art",
+                    "Physical Education",
+                ]),
+                term_name: faker.helpers.arrayElement(["term 1", "term 2"]),
                 status: faker.helpers.arrayElement(["present", "absent", "tardy"]),
             })
         }
