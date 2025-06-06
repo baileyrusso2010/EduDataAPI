@@ -16,7 +16,7 @@ import sequelize from "./src/database"
 import assessmentRoutes from "./src/routes/assessment.routes"
 import attendanceRoutes from "./src/routes/attendance.routes"
 import profileRoutes from "./src/routes/profile.routes"
-import { generateFakeBehavior } from "./src/seed/fakeRoster"
+import { generateFakeBehavior, generateFakeGrades } from "./src/seed/fakeRoster"
 
 app.use("/assessments", assessmentRoutes)
 app.use("/attendance", attendanceRoutes)

@@ -4,6 +4,7 @@ import { Student_flags } from "../models/student_flags.model"
 import { AssessmentResult } from "../models/assessment_result.model"
 import { Assessment } from "../models/assessment.model"
 import { BehaviorRecord } from "../models/behavior.model"
+import { GradeBook } from "../models/grade_book.model"
 
 export const getProfile = async (req: Request, res: Response): Promise<void> => {
     const { student_number } = req.params
@@ -38,6 +39,11 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
                     as: "flags",
                     attributes: ["iep", "section_504", "frl_eligible"],
                 },
+                {
+                    model: GradeBook,
+                    as: "grade_book",
+                    attributes: ["term_name", "task", "department_name", "course_name", "score"],
+                },
             ],
         })
 
@@ -60,6 +66,7 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
             })),
             behavior: student.behaviors,
             flags: student.flags,
+            grade_book: student.grade_book,
         })
     } catch (err) {
         console.error("Error loading profile:", err)

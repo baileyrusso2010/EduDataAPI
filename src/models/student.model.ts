@@ -4,6 +4,7 @@ import { School } from "./school.model"
 import { AssessmentResult } from "./assessment_result.model"
 import { BehaviorRecord } from "./behavior.model"
 import { Student_flags } from "./student_flags.model"
+import { GradeBook } from "./grade_book.model"
 
 export class Student extends Model {
     declare id: number
@@ -16,6 +17,7 @@ export class Student extends Model {
     declare school_id: number
     declare AssessmentResults?: AssessmentResult[] // This allows `student.AssessmentResults`
     declare behaviors?: BehaviorRecord[]
+    declare grade_book?: GradeBook[]
     declare flags?: Student_flags
 }
 

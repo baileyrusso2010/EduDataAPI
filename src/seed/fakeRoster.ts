@@ -40,6 +40,30 @@ async function generateFakeData() {
     await sequelize.close()
 }
 
+async function generateFakeGrades() {
+    for (const student of await Student.findAll()) {
+        for (let period = 1; period <= 6; period++) {
+            await GradeBook.create({
+                student_id: student.id,
+                school_year: "2024-2025",
+                term_name: faker.helpers.arrayElement(["QTR 1", "QTR 2", "QTR3", "QTR4"]),
+                grade: faker.helpers.arrayElement(["10", "11", "12"]),
+                task: faker.helpers.arrayElement(["Quarter Grades", "Interim"]),
+                department_name: faker.helpers.arrayElement(["Science", "Math", "P/E"]),
+                course_name: faker.helpers.arrayElement([
+                    "Math",
+                    "English",
+                    "Science",
+                    "History",
+                    "Art",
+                    "Physical Education",
+                ]),
+                score: faker.helpers.arrayElement(["97", "56", "73", "83", "P", "F"]),
+            })
+        }
+    }
+}
+
 async function generateFakeAttendance() {
     for (const student of await Student.findAll()) {
         const date = faker.date.recent({ days: 10 }) // a random date in past 10 days
@@ -95,6 +119,7 @@ async function generateFakeBehavior() {
 import { Assessment } from "../models/assessment.model"
 import { AssessmentResult } from "../models/assessment_result.model"
 import { ScoreBand } from "../models/score_band.model"
+import { GradeBook } from "../models/grade_book.model"
 
 /**
  * Creates a new assessment and generates fake results for each student.
@@ -180,4 +205,5 @@ export {
     generateFakeBehavior,
     createAssessmentWithResults,
     createBandScores,
+    generateFakeGrades,
 }
