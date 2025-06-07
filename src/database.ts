@@ -9,6 +9,12 @@ const sequelize = new Sequelize({
     username: String(process.env.DB_USERNAME),
     password: String(process.env.DB_PASSWORD),
     logging: false, // optional
+    dialectOptions: {
+        ssl:{
+        required: true,
+        rejectUnauthorized: false,
+        }
+    }
 })
 
 export default sequelize
