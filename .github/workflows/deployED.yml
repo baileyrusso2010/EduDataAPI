@@ -32,13 +32,14 @@ jobs:
 
     - name: Build TypeScript app
       run: pnpm build
-
+      
     - name: Add SSH key
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.EC2_KEY }}" > ~/.ssh/id_rsa
+        echo "${{ secrets.EC2_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
 
     - name: Deploy `dist/` to EC2 via rsync
       run: |
