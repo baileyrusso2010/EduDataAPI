@@ -1,4 +1,4 @@
-name: Deploy Node.js TypeScript App to EC2
+name: Deploy to EC2
 
 on:
   push:
@@ -10,46 +10,63 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '22'
-        
-    - name: Enable corepack and activate pnpm
-      run: |
-        corepack enable
-        corepack prepare pnpm@latest --activate
-    
-    - name: Install dependencies
-      run: pnpm install
+      # Set up Node.js 22
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
 
+      - name: Enable corepack and install pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
 
-    - name: Install dependencies
-      run: pnpm install
+      # Install dependencies
+      - name: Install dependencies
+        run: pnpm install
 
-    - name: Build TypeScript app
-      run: pnpm build
+      # Build TypeScript project
+      - name: Build project
+        run: pnpm build
+        continue-on-error: false
 
-    - name: Add SSH key
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.EC2_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+      # Debug: List directory contents
+      - name: List build output
+        run: |
+          ls -la
+          ls -la dist || echo "dist folder not found"
 
-    - name: Deploy `dist/` to EC2 via rsync
-      run: |
-        rsync -avz --delete \
-          ./dist/ \
-          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:${{ secrets.EC2_PATH }}/dist
+      # Check if dist folder exists
+      - name: Check for dist folder
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "Error: dist folder not found. Check your pnpm build configuration."
+            exit 1
+          fi
 
-    - name: SSH into EC2 and start app with PM2
-      run: |
-        ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-          cd ${{ secrets.EC2_PATH }}
-          pnpm install --prod
-          pm2 restart my-app || pm2 start dist/index.js --name my-app
-        EOF
+      # Deploy to EC2
+      - name: Deploy to EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_KEY: ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          echo "$EC2_KEY" > key.pem
+          chmod 400 key.pem
+          
+          # Copy built files to EC2
+          scp -o StrictHostKeyChecking=no -i key.pem -r dist/* $EC2_USER@$EC2_HOST:/path/to/your/app
+          
+          # SSH into EC2 and restart the application
+          ssh -o StrictHostKeyChecking=no -i key.pem $EC2_USER@$EC2_HOST << 'EOF'
+            cd /path/to/your/app
+            pnpm install --production
+            pm2 restart app || pm2 start dist/index.js --name app
+          EOF
+          
+          # Clean up
+          rm key.pem
