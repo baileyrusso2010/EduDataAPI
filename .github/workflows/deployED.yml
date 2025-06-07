@@ -6,14 +6,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Enable corepack (for pnpm)
+    - name: Enable corepack
       run: |
         corepack enable
         corepack prepare pnpm@latest --activate
@@ -24,38 +24,28 @@ jobs:
         node-version: '22'
         cache: 'pnpm'
 
-    - name: Verify pnpm installed
-      run: pnpm --version
-
     - name: Install dependencies
       run: pnpm install
 
     - name: Build the app
       run: pnpm run build
 
-    - name: Archive dist folder
-      run: tar -czf dist.tar.gz dist
-
-    - name: Copy dist to EC2
+    - name: Copy `dist/` folder to EC2
       uses: appleboy/scp-action@v0.1.4
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_KEY }}
-        source: "dist.tar.gz"
-        target: "/home/${{ secrets.EC2_USER }}/app"
+        source: "dist/*"
+        target: "/home/${{ secrets.EC2_USER }}/app/dist"
 
-    - name: Deploy on EC2
+    - name: Post-deploy script on EC2
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_KEY }}
         script: |
-          cd /home/${{ secrets.EC2_USER }}/app
-          rm -rf dist
-          tar -xzf dist.tar.gz
-          rm dist.tar.gz
-          echo "✅ App deployed!"
-          # Optionally restart Node app:
-          # pm2 restart your-app || pm2 start dist/index.js --name your-app
+          echo "✅ Code deployed to ~/app/dist/"
+          # Optionally restart Node app
+          # pm2 restart your-app || pm2 start ~/app/dist/index.js --name your-app
