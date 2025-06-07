@@ -1,4 +1,4 @@
-name: Deploy to EC2
+name: Connect to EC2
 
 on:
   push:
@@ -6,50 +6,12 @@ on:
       - main
 
 jobs:
-  deploy:
+  connect:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the code
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      # Set up Node.js 22
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Enable corepack and install pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@latest --activate
-
-      # Install dependencies
-      - name: Install dependencies
-        run: pnpm install
-
-      # Build TypeScript project
-      - name: Build project
-        run: pnpm build
-        continue-on-error: false
-
-      # Debug: List directory contents
-      - name: List build output
-        run: |
-          ls -la
-          ls -la dist || echo "dist folder not found"
-
-      # Check if dist folder exists
-      - name: Check for dist folder
-        run: |
-          if [ ! -d "dist" ]; then
-            echo "Error: dist folder not found. Check your pnpm build configuration."
-            exit 1
-          fi
-
-      # Deploy to EC2
-      - name: Deploy to EC2
+      # Test SSH connectivity to EC2
+      - name: Test SSH Connection
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
@@ -57,16 +19,5 @@ jobs:
         run: |
           echo "$EC2_KEY" > key.pem
           chmod 400 key.pem
-          
-          # Copy built files to EC2
-          scp -o StrictHostKeyChecking=no -i key.pem -r dist/* $EC2_USER@$EC2_HOST:/path/to/your/app
-          
-          # SSH into EC2 and restart the application
-          ssh -o StrictHostKeyChecking=no -i key.pem $EC2_USER@$EC2_HOST << 'EOF'
-            cd /path/to/your/app
-            pnpm install --production
-            pm2 restart app || pm2 start dist/index.js --name app
-          EOF
-          
-          # Clean up
+          ssh -o StrictHostKeyChecking=no -i key.pem $EC2_USER@$EC2_HOST "echo Connected to EC2 successfully" || { echo "SSH connection failed"; exit 1; }
           rm key.pem
