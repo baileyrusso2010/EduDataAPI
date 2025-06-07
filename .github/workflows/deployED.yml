@@ -2,7 +2,7 @@ name: Build and Deploy API to EC2
 
 on:
   push:
-    branches: [main] # Change if needed
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -13,16 +13,20 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Use Node.js 22.x
+    - name: Enable corepack (for pnpm)
+      run: |
+        corepack enable
+        corepack prepare pnpm@latest --activate
+
+    - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '22'
         cache: 'pnpm'
-    - name: Enable corepack and activate pnpm
-      run: |
-        corepack enable
-        corepack prepare pnpm@latest --activate
-    
+
+    - name: Verify pnpm installed
+      run: pnpm --version
+
     - name: Install dependencies
       run: pnpm install
 
@@ -53,6 +57,5 @@ jobs:
           tar -xzf dist.tar.gz
           rm dist.tar.gz
           echo "✅ App deployed!"
-          # Optionally restart your Node.js app here
-          # For example:
-          # pm2 restart your-app-name || pm2 start dist/index.js --name your-app-name
+          # Optionally restart Node app:
+          # pm2 restart your-app || pm2 start dist/index.js --name your-app
