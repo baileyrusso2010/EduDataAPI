@@ -24,10 +24,6 @@ jobs:
           corepack enable
           corepack prepare pnpm@latest --activate
 
-      # Install pnpm
-      - name: Install pnpm
-        run: npm install -g pnpm
-
       # Install dependencies
       - name: Install dependencies
         run: pnpm install
