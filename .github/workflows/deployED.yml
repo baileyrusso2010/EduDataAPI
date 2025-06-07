@@ -1,24 +1,57 @@
-name: Connect to EC2
+name: Build and Deploy API to EC2
 
 on:
-  workflow_dispatch:  # manually trigger from GitHub UI
+  push:
+    branches: [main] # Change if needed
+  workflow_dispatch:
 
 jobs:
-  ssh-connect:
+  build:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Connect to EC2 via SSH and run a command
+    - name: Use Node.js 22.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'pnpm'
+
+    - name: Install pnpm
+      run: npm install -g pnpm
+
+    - name: Install dependencies
+      run: pnpm install
+
+    - name: Build the app
+      run: pnpm run build
+
+    - name: Archive dist folder
+      run: tar -czf dist.tar.gz dist
+
+    - name: Copy dist to EC2
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_KEY }}
+        source: "dist.tar.gz"
+        target: "/home/${{ secrets.EC2_USER }}/app"
+
+    - name: Deploy on EC2
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_KEY }}
-        port: 22
         script: |
-          echo "Connected to EC2!"
-          uname -a
-          # run any other command here
+          cd /home/${{ secrets.EC2_USER }}/app
+          rm -rf dist
+          tar -xzf dist.tar.gz
+          rm dist.tar.gz
+          echo "✅ App deployed!"
+          # Optionally restart your Node.js app here
+          # For example:
+          # pm2 restart your-app-name || pm2 start dist/index.js --name your-app-name
