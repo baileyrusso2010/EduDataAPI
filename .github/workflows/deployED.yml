@@ -30,10 +30,11 @@ jobs:
 
     - name: Prepare SSH key
       run: |
+        mkdir -p ~/.ssh
         echo "${{ secrets.EC2_KEY }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
 
-    - name: Disable strict host key checking (optional, for smooth SSH)
+    - name: Disable strict host key checking (optional)
       run: |
         mkdir -p ~/.ssh
         echo -e "Host *\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
@@ -46,7 +47,7 @@ jobs:
       run: |
         ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
           cd /home/${{ secrets.EC2_USER }}/app
-          # e.g. restart pm2 or node
+          # Restart your app with pm2 or node command here, for example:
           pm2 restart your-app-name || pm2 start index.js --name your-app-name
           exit
         EOF
