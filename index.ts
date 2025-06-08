@@ -17,10 +17,15 @@ import assessmentRoutes from "./src/routes/assessment.routes"
 import attendanceRoutes from "./src/routes/attendance.routes"
 import profileRoutes from "./src/routes/profile.routes"
 import { generateFakeBehavior, generateFakeData, generateFakeGrades } from "./src/seed/fakeRoster"
+import { r } from "@faker-js/faker/dist/airline-BUL6NtOJ"
 
 app.use("/assessments", assessmentRoutes)
 app.use("/attendance", attendanceRoutes)
 app.use("/profile", profileRoutes)
+
+app.get("/", (req, res) => {
+    res.send("Welcome to the School Management API")   
+})
 
 app.listen(PORT, async () => {
     await sequelize
