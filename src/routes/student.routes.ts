@@ -1,9 +1,10 @@
 import express, { Router } from "express"
-import { getProfile } from "../controller/profile.controller"
+import { getStudent } from "../controller/student.controller"
 
 const router: Router = express.Router()
 
-router.get("/:student_number", getProfile)
+router.get("/search", getStudent)
 
 
 export default router
+

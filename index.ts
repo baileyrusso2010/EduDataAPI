@@ -16,16 +16,18 @@ import sequelize from "./src/database"
 import assessmentRoutes from "./src/routes/assessment.routes"
 import attendanceRoutes from "./src/routes/attendance.routes"
 import profileRoutes from "./src/routes/profile.routes"
-import { generateFakeBehavior, generateFakeData, generateFakeGrades } from "./src/seed/fakeRoster"
-import { r } from "@faker-js/faker/dist/airline-BUL6NtOJ"
+import studentRoutes from "./src/routes/student.routes"
+import { generateFakeGrades } from "./src/seed/fakeRoster"
 
 app.use("/assessments", assessmentRoutes)
 app.use("/attendance", attendanceRoutes)
 app.use("/profile", profileRoutes)
+app.use("/student", studentRoutes)
 
 app.get("/", (req, res) => {
     res.send("Welcome to the School Management API")   
 })
+
 
 app.listen(PORT, async () => {
     await sequelize
@@ -38,6 +40,7 @@ app.listen(PORT, async () => {
         })
 
     await sequelize.sync({ alter: true })
+
 
     console.log(`Listening on PORT: ${PORT}`)
 })
