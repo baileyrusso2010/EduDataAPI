@@ -6,10 +6,25 @@ const app = express()
 import dotenv from "dotenv"
 dotenv.config()
 
-const cors = require("cors")
+import cors from 'cors';
+
 app.use(bodyParser.json({ limit: "10mb" }))
 app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }))
-app.use(cors())
+
+const allowedOrigins = ['http://localhost:5173', 'https://chalkrecords.com'];
+const corsOptions: cors.CorsOptions = {
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+  };
+
+app.use(cors(corsOptions));
+
 app.use(express.json())
 
 import sequelize from "./src/database"
