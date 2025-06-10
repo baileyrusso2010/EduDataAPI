@@ -2,47 +2,43 @@ const PORT = process.env.PORT || 3000
 import bodyParser from "body-parser"
 import express from "express"
 const app = express()
-
 import dotenv from "dotenv"
 dotenv.config()
-
-import cors from 'cors';
-
-app.use(bodyParser.json({ limit: "10mb" }))
+import cors from "cors"
+app.use(bodyParser.json({ limit: "10mb" })) //file upload
 app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }))
-
-const allowedOrigins = ['http://localhost:5173', 'https://chalkrecords.com'];
+const allowedOrigins = ["http://localhost:5173", "https://chalkrecords.com"]
 const corsOptions: cors.CorsOptions = {
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true)
+        } else {
+            callback(new Error("Not allowed by CORS"))
+        }
     },
     credentials: true,
-  };
-
-app.use(cors(corsOptions));
-
+}
+app.use(cors(corsOptions))
 app.use(express.json())
-
 import sequelize from "./src/database"
+import "./src/models/associations"
+
 import assessmentRoutes from "./src/routes/assessment.routes"
 import attendanceRoutes from "./src/routes/attendance.routes"
 import profileRoutes from "./src/routes/profile.routes"
 import studentRoutes from "./src/routes/student.routes"
-import { generateFakeGrades } from "./src/seed/fakeRoster"
+import teacherRoutes from "./src/routes/teacher.routes"
+import { generateFakeData } from "./src/seed/fakeData"
 
 app.use("/assessments", assessmentRoutes)
 app.use("/attendance", attendanceRoutes)
 app.use("/profile", profileRoutes)
 app.use("/student", studentRoutes)
+app.use("/teacher", teacherRoutes)
 
 app.get("/", (req, res) => {
-    res.send("Welcome to the School Management API")   
+    res.send("Welcome to the School Management API")
 })
-
 
 app.listen(PORT, async () => {
     await sequelize
@@ -55,7 +51,8 @@ app.listen(PORT, async () => {
         })
 
     await sequelize.sync({ alter: true })
-
+    // await sequelize.sync({ force: true })
+    // await generateFakeData()
 
     console.log(`Listening on PORT: ${PORT}`)
 })

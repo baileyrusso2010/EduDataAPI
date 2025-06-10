@@ -1,6 +1,6 @@
 import { Model, DataTypes } from "sequelize"
 import sequelize from "../database"
-import { Assessment } from "./assessment.model"
+import { Assessment } from "./assessments/assessment.model"
 
 export class ScoreBand extends Model {
     declare id: number

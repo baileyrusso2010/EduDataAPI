@@ -116,8 +116,8 @@ async function generateFakeBehavior() {
     }
 }
 
-import { Assessment } from "../models/assessment.model"
-import { AssessmentResult } from "../models/assessment_result.model"
+import { Assessment } from "../models/assessments/assessment.model"
+import { AssessmentResult } from "../models/assessments/assessment_result.model"
 import { ScoreBand } from "../models/score_band.model"
 import { GradeBook } from "../models/grade_book.model"
 

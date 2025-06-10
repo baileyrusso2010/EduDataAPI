@@ -1,6 +1,6 @@
 import { Model, DataTypes } from "sequelize"
-import sequelize from "../database"
-import { Student } from "./student.model"
+import sequelize from "../../database"
+import { Student } from "../student.model"
 import { Assessment } from "./assessment.model"
 
 export class AssessmentResult extends Model {

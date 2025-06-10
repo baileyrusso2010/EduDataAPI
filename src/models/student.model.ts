@@ -1,10 +1,11 @@
 import { Model, DataTypes } from "sequelize"
 import sequelize from "../database"
 import { School } from "./school.model"
-import { AssessmentResult } from "./assessment_result.model"
+import { AssessmentResult } from "./assessments/assessment_result.model"
 import { BehaviorRecord } from "./behavior.model"
 import { Student_flags } from "./student_flags.model"
 import { GradeBook } from "./grade_book.model"
+import { Enrollment } from "./enrollment.model"
 
 export class Student extends Model {
     declare id: number

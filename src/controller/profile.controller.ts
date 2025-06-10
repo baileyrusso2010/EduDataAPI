@@ -1,8 +1,8 @@
 import { Request, Response } from "express"
 import { Student } from "../models/student.model"
 import { Student_flags } from "../models/student_flags.model"
-import { AssessmentResult } from "../models/assessment_result.model"
-import { Assessment } from "../models/assessment.model"
+import { AssessmentResult } from "../models/assessments/assessment_result.model"
+import { Assessment } from "../models/assessments/assessment.model"
 import { BehaviorRecord } from "../models/behavior.model"
 import { GradeBook } from "../models/grade_book.model"
 
