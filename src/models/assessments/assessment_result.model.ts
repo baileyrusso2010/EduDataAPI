@@ -7,7 +7,7 @@ export class AssessmentResult extends Model {
     declare id: number
     declare student_id: number
     declare assessment_id: number
-    declare final_score: number
+    declare final_score: string
     declare questions: {
         question: string
         maxPoints: number
@@ -15,6 +15,9 @@ export class AssessmentResult extends Model {
     }[]
     declare assessment?: Assessment
 }
+/*
+Might want to add schoolyear apart of this
+*/
 
 AssessmentResult.init(
     {
@@ -32,7 +35,7 @@ AssessmentResult.init(
             allowNull: false,
         },
         final_score: {
-            type: DataTypes.FLOAT,
+            type: DataTypes.STRING,
             allowNull: false,
         },
         questions: {

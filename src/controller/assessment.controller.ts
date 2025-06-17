@@ -4,6 +4,16 @@ import { AssessmentResult } from "../models/assessments/assessment_result.model"
 import { ScoreBand } from "../models/score_band.model"
 import { Student } from "../models/student.model"
 
+export const getAllAssessmnets = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const results = await Assessment.findAll({})
+
+        res.status(200).send(results)
+    } catch (e) {
+        res.status(500).json({ error: "Failed to create assessment" })
+    }
+}
+
 export const createAssessment = async (req: Request, res: Response): Promise<void> => {
     const { test_name, standardized } = req.body
 
@@ -40,9 +50,8 @@ export const getAssessmentWithResults = async (req: Request, res: Response): Pro
 
         const student = await Student.findOne({
             where: { student_number },
+            attributes: ["student_number", "id"],
         })
-
-        console.log(student)
 
         if (!student) {
             res.status(404).json({ message: "Student not found" })
@@ -81,47 +90,49 @@ export const getAssessmentWithResults = async (req: Request, res: Response): Pro
 }
 
 export const uploadAssessmentData = async (req: Request, res: Response): Promise<void> => {
-    const data = req.body
-
-    const skipped: string[] = []
+    const assessment_id = req.body.assessment_id
+    const results = req.body.results
 
     try {
-        for (const entry of data) {
-            const { studentUid, testName, resPercent, questions } = entry
+        const assessment = await Assessment.findOne({
+            where: { id: assessment_id },
+        })
 
-            // 1. Find student (skip if not found or invalid)
-            if (!studentUid) {
-                skipped.push("Invalid student ID")
+        const skipped: string[] = []
+
+        for (let dt of results) {
+            const student_id = dt.person_id
+            const finalScore = dt.final_score
+            let testData = dt.result_data
+
+            if (!student_id) {
+                skipped.push(student_id)
                 continue
             }
-            const student = await Student.findOne({ where: { student_number: studentUid } })
+
+            const student = await Student.findOne({ where: { student_number: student_id } })
+
             if (!student) {
-                skipped.push(studentUid)
+                skipped.push(student_id)
                 continue
             }
 
-            // 2. Find or create assessment
-            const assessment = await Assessment.create({
-                test_name: testName,
-            })
-
-            // 3. Create assessment result (embed questions directly)
             if (student) {
-                const result = await AssessmentResult.create({
+                await AssessmentResult.create({
                     student_id: student.id,
-                    assessment_id: assessment.id,
-                    final_score: resPercent,
-                    questions, // this is assumed to be a JSONB column
+                    assessment_id: assessment?.id,
+                    final_score: finalScore,
+                    questions: testData, // this is assumed to be a JSONB column
                 })
             }
         }
 
+        //display on front end, studnets missing
         res.status(200).json({
             message: "Upload complete.",
             skippedStudents: skipped,
         })
-    } catch (error) {
-        console.error("Assessment upload failed:", error)
+    } catch (e) {
         res.status(500).json({ error: "Internal server error" })
     }
 }
