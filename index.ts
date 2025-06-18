@@ -28,13 +28,16 @@ import attendanceRoutes from "./src/routes/attendance.routes"
 import profileRoutes from "./src/routes/profile.routes"
 import studentRoutes from "./src/routes/student.routes"
 import teacherRoutes from "./src/routes/teacher.routes"
+import mtssRoutes from "./src/routes/mtss.routes"
 import { generateFakeData } from "./src/seed/fakeData"
 
+//should use v1/
 app.use("/assessments", assessmentRoutes)
 app.use("/attendance", attendanceRoutes)
 app.use("/profile", profileRoutes)
 app.use("/student", studentRoutes)
 app.use("/teacher", teacherRoutes)
+app.use("/mtss", mtssRoutes)
 
 app.get("/", (req, res) => {
     res.send("Welcome to the School Management API")

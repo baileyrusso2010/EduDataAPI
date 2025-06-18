@@ -9,6 +9,10 @@ import { CourseSection } from "./courses/course_section.model"
 import { Enrollment } from "./enrollment.model"
 // Assuming you have a School model
 import { School } from "./school.model" // Adjust path as needed
+import { StudentTier } from "./mtss/student_tier.model"
+import { Tier } from "./mtss/tier.model"
+import { StudentIntervention } from "./mtss/student_interventions.mode"
+import { Intervention } from "./mtss/interventions.model"
 
 // Define Associations
 
@@ -62,6 +66,20 @@ Enrollment.belongsTo(CourseSection, {
     targetKey: "sectionID",
     as: "courseSection",
 })
+
+// 🔗 Associations
+StudentTier.belongsTo(Student, { foreignKey: "studentId" })
+Student.hasMany(StudentTier, { foreignKey: "studentId" })
+
+StudentTier.belongsTo(Tier, { foreignKey: "tierId" })
+Tier.hasMany(StudentTier, { foreignKey: "tierId" })
+
+Intervention.hasMany(StudentIntervention, { foreignKey: "interventionId" })
+StudentIntervention.belongsTo(Intervention, { foreignKey: "interventionId" })
+
+// If you have a Student model:
+StudentIntervention.belongsTo(Student, { foreignKey: "studentId" })
+Student.hasMany(StudentIntervention, { foreignKey: "studentId" })
 
 // Export models (optional, if you want to import them from this file in other parts of your app)
 export { Student, Teacher, Courses, CourseSection, Enrollment, School }
