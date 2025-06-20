@@ -5,5 +5,4 @@ const router: Router = express.Router()
 
 router.get("/:student_number", getProfile)
 
-
 export default router

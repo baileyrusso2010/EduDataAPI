@@ -1,7 +1,18 @@
 import { Model, DataTypes } from "sequelize"
 import sequelize from "../../database"
+import { Tier } from "./tier.model"
 
-export class StudentTier extends Model {}
+export class StudentTier extends Model {
+    declare id: number
+    declare studentId: number
+    declare tierId: number
+    declare assigned_date: Date
+    declare end_date: Date | null
+    declare notes: string | null
+
+    // Add this line:
+    declare Tier?: Tier
+}
 
 StudentTier.init(
     {

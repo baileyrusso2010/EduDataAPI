@@ -6,6 +6,9 @@ import { BehaviorRecord } from "./behavior.model"
 import { Student_flags } from "./student_flags.model"
 import { GradeBook } from "./grade_book.model"
 import { Enrollment } from "./enrollment.model"
+import { StudentIntervention } from "./mtss/student_interventions.mode"
+import { Intervention } from "./mtss/interventions.model"
+import { StudentTier } from "./mtss/student_tier.model"
 
 export class Student extends Model {
     declare id: number
@@ -20,6 +23,8 @@ export class Student extends Model {
     declare behaviors?: BehaviorRecord[]
     declare grade_book?: GradeBook[]
     declare flags?: Student_flags
+    declare StudentInterventions?: StudentIntervention[] // This allows `student.AssessmentResults`
+    declare StudentTiers?: StudentTier[]
 }
 
 //    + ',' + 'Teacher First Name'

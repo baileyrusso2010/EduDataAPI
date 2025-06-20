@@ -1,11 +1,53 @@
 import { Request, Response } from "express"
-import { Attendance } from "../models/attendance.model"
 import { Op } from "sequelize"
 import { Student } from "../models/student.model"
+import { Tier } from "../models/mtss/tier.model"
 import { StudentTier } from "../models/mtss/student_tier.model"
 import { Intervention } from "../models/mtss/interventions.model"
 import { StudentIntervention } from "../models/mtss/student_interventions.mode"
+import { Attendance } from "../models/attendance.model"
 import sequelize from "sequelize"
+
+export const getStudent = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const studentId = req.params.id
+
+        const student = await Student.findByPk(studentId, {
+            include: [
+                {
+                    model: StudentTier,
+                    where: { end_date: null },
+                    required: false,
+                    include: [Tier],
+                },
+                {
+                    model: StudentIntervention,
+                    where: { end_date: null },
+                    required: false,
+                    include: [Intervention],
+                },
+            ],
+        })
+
+        if (!student) {
+            res.status(404).json({ error: "Student not found" })
+            return
+        }
+
+        res.status(200).json({
+            ...student.toJSON(),
+            currentTier: student.StudentTiers?.[0]?.Tier || null,
+            activeInterventions:
+                student.StudentInterventions?.map((si) => ({
+                    ...si.Intervention?.dataValues,
+                    start_date: si.start_date,
+                    end_date: si.end_date,
+                })) || [],
+        })
+    } catch (e) {
+        res.status(500).json({ error: "Error Obtaining students tier" })
+    }
+}
 
 export const getStudentsInTier = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -28,9 +70,9 @@ export const getStudentsInTier = async (req: Request, res: Response): Promise<vo
 }
 
 //really an insert to new tier
-export const assignStudentToTier = async (req: Request, res: Response): Promise<void> => {
+export const assignTierAndIntervention = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { studentId, tierId, notes } = req.body
+        const { studentId, tierId, notes, name, focus_area, frequency } = req.body
 
         //end old tier auto
         await StudentTier.update(
@@ -48,6 +90,24 @@ export const assignStudentToTier = async (req: Request, res: Response): Promise<
             tierId: tierId,
             assigned_date: new Date(), //might need to pass in
             notes: notes,
+        })
+
+        const newIntervention = await Intervention.create({
+            studentId,
+            name,
+            focus_area,
+            tier_level: tierId,
+            frequency,
+            description: notes,
+        })
+
+        await StudentIntervention.create({
+            studentId,
+            interventionId: newIntervention.id,
+            start_date: new Date(),
+            end_date: null,
+            assigned_by: "System", // assumes req.user is set by auth middleware
+            notes,
         })
 
         res.status(200).json({ message: "Student tier Inserted successfully" })
@@ -87,7 +147,7 @@ export const createAndAssignIntervention = async (req: Request, res: Response): 
         })
 
         // 2. Assign the intervention to the student
-        const si = await StudentIntervention.create({
+        await StudentIntervention.create({
             studentId,
             interventionId: intervention.id,
             start_date: new Date(),
