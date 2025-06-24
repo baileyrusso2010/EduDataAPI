@@ -10,11 +10,10 @@ const sequelize = new Sequelize({
     password: String(process.env.DB_PASSWORD),
     logging: false, // optional
     dialectOptions: {
-        ssl: {
-            required: true,
-            rejectUnauthorized: false // ⛔ Not for production
-            
-        }
+        // ssl: {
+        //     required: true,
+        //     rejectUnauthorized: false // ⛔ Not for production
+        // }
         // rejectUnauthorized: false,
     },
 })

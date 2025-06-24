@@ -46,12 +46,9 @@ export const addResults = async (req: Request, res: Response): Promise<void> => 
 
 export const getAssessmentWithResults = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { student_number } = req.params
+        const { student_id } = req.params
 
-        const student = await Student.findOne({
-            where: { student_number },
-            attributes: ["student_number", "id"],
-        })
+        const student = await Student.findByPk(student_id)
 
         if (!student) {
             res.status(404).json({ message: "Student not found" })
@@ -110,7 +107,7 @@ export const uploadAssessmentData = async (req: Request, res: Response): Promise
                 continue
             }
 
-            const student = await Student.findOne({ where: { student_number: student_id } })
+            const student = await Student.findByPk(student_id)
 
             if (!student) {
                 skipped.push(student_id)
@@ -134,5 +131,68 @@ export const uploadAssessmentData = async (req: Request, res: Response): Promise
         })
     } catch (e) {
         res.status(500).json({ error: "Internal server error" })
+    }
+}
+
+export const getAssessmentWithStats = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { student_id } = req.params
+
+        const student = await Student.findByPk(student_id)
+
+        if (!student) {
+            res.status(404).json({ message: "Student not found" })
+            return
+        }
+        type AssessmentResultWithAssessment = AssessmentResult & {
+            assessment: {
+                test_name: string
+            }
+        }
+        // Fetch the results
+        const results = (await AssessmentResult.findAll({
+            where: { student_id: student.id },
+            include: [
+                {
+                    model: Assessment,
+                    as: "assessment",
+                    attributes: ["test_name"],
+                },
+            ],
+            attributes: ["final_score", "questions", "createdAt"],
+            order: [["createdAt", "DESC"]],
+        })) as AssessmentResultWithAssessment[] // 👈 cast here
+
+        const allAssessmentResults = await Assessment.findByPk(1, {
+            include: [
+                {
+                    model: AssessmentResult,
+                },
+            ],
+        })
+
+        // Print only the dataValues for all AssessmentResults
+        const assessmentResults = allAssessmentResults?.dataValues.AssessmentResults || []
+        const dataValuesArray = assessmentResults.map((result: any) => result.dataValues)
+
+        let map = new Map()
+        for (let dt of dataValuesArray) {
+            for (let qs of dt.questions) {
+                if (qs.question_id == null) map.set(qs.question_id, qs.scores)
+                else map.set(qs.question_id, map.get(qs.question_id) + qs.score)
+            }
+        }
+
+        res.json({
+            student: student,
+            assessments: results.map((r) => ({
+                assessmentName: r.assessment.test_name,
+                resPercent: r.final_score,
+                questions: r.questions,
+            })),
+            // questionAverages: averages,
+        })
+    } catch (e) {
+        res.status(500).json({ error: "Failed to add assessment results" })
     }
 }
