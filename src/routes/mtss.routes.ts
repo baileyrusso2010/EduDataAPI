@@ -1,13 +1,11 @@
 import express, { Router } from "express"
 import {
-    assignTierAndIntervention,
-    createAndAssignIntervention,
-    getStudent,
+	assignTierAndIntervention,
+	createAndAssignIntervention,
 } from "../controller/mtss.controller"
 
 const router: Router = express.Router()
 
-router.get("/student/:id", getStudent)
 router.post("/student-tier", assignTierAndIntervention)
 router.post("/student-intervention", createAndAssignIntervention)
 

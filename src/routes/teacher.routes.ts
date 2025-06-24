@@ -1,14 +1,14 @@
-import express, { Router } from "express"
+import express, { Router } from "express";
 import {
-    getAllTeachers,
-    getTeacherCourses,
-    getTeacherStudents,
-} from "../controller/teacher.controller"
+  getAllTeachers,
+  getTeacherCourses,
+  getTeacherStudents,
+} from "../controller/teacher.controller";
 
-const router: Router = express.Router()
+const router: Router = express.Router();
 
-router.get("/teachers", getAllTeachers)
-router.get("/courses/:teacher_id", getTeacherCourses)
-router.get("/students/:section_id", getTeacherStudents)
+router.get("/", getAllTeachers);
+router.get("/courses/:teacher_id", getTeacherCourses);
+router.get("/students/:section_id", getTeacherStudents);
 
-export default router
+export default router;
