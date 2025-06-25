@@ -17,8 +17,8 @@ Student_flags.init(
             autoIncrement: true,
             primaryKey: true,
         },
-        student_number: {
-            type: DataTypes.STRING,
+        student_id: {
+            type: DataTypes.INTEGER,
             allowNull: false,
         },
         iep: {
