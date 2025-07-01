@@ -26,7 +26,7 @@ Staff.init(
 
     {
         sequelize,
-        tableName: "assessment_results",
+        tableName: "staff",
         timestamps: true,
     }
 )

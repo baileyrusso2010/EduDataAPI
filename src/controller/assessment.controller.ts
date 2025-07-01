@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from "express"
 import { Assessment } from "../models/assessments/assessment.model"
-import { AssessmentResult } from "../models/assessments/assessment_result.model"
 import { ScoreBand } from "../models/score_band.model"
 import { Student } from "../models/student.model"
+import { Questions } from "../models/assessments/questions.model"
+import { Student_Answers } from "../models/assessments/student_answers"
 
 export const getAllAssessmnets = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -15,10 +16,15 @@ export const getAllAssessmnets = async (req: Request, res: Response): Promise<vo
 }
 
 export const createAssessment = async (req: Request, res: Response): Promise<void> => {
-    const { test_name, standardized } = req.body
+    const { test_name, standardized, date, assessment_type } = req.body
 
     try {
-        const assessment = await Assessment.create({ test_name, standardized })
+        const assessment = await Assessment.create({
+            test_name,
+            standardized,
+            date,
+            assessment_type,
+        })
 
         res.status(201).json(assessment)
     } catch (err) {
@@ -26,173 +32,83 @@ export const createAssessment = async (req: Request, res: Response): Promise<voi
     }
 }
 
-export const addResults = async (req: Request, res: Response): Promise<void> => {
-    const { id: assessment_id } = req.params
-    const { student_id, final_score, questions } = req.body
-
+export const createScores = async (req: Request, res: Response): Promise<void> => {
     try {
-        const result = await AssessmentResult.create({
-            assessment_id,
-            student_id,
-            final_score,
-            questions,
-        })
+        const { assessment_id, scores } = req.body
 
-        res.status(201).json(result)
-    } catch (err) {
-        res.status(500).json({ error: "Failed to add assessment results" })
-    }
-}
-
-export const getAssessmentWithResults = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const { student_id } = req.params
-
-        const student = await Student.findByPk(student_id)
-
-        if (!student) {
-            res.status(404).json({ message: "Student not found" })
+        if (!assessment_id || !Array.isArray(scores)) {
+            res.status(400).json({ message: "Invalid request format" })
             return
         }
-        type AssessmentResultWithAssessment = AssessmentResult & {
-            assessment: {
-                test_name: string
-            }
+
+        // Fetch all questions for this assessment
+        const questions = await Questions.findAll({
+            where: { assessment_id },
+        })
+
+        if (!questions.length) {
+            res.status(404).json({ message: "No questions found for assessment" })
+            return
         }
-        // Fetch the results
-        const results = (await AssessmentResult.findAll({
-            where: { student_id: student.id },
-            include: [
-                {
-                    model: Assessment,
-                    as: "assessment",
-                    attributes: ["test_name"],
-                },
-            ],
-            attributes: ["final_score", "questions", "createdAt"],
-            order: [["createdAt", "DESC"]],
-        })) as AssessmentResultWithAssessment[] // 👈 cast here
 
-        res.json({
-            student: student,
-            assessments: results.map((r) => ({
-                assessmentName: r.assessment.test_name,
-                resPercent: r.final_score,
-                questions: r.questions,
-            })),
-        })
-    } catch (err) {
-        res.status(500).json({ error: "Failed to add assessment results" })
-    }
-}
+        // Build question_num to id map
+        const questionMap: Record<string, number> = {}
+        for (const q of questions) {
+            questionMap[`question_${q.question_num}`] = q.id
+        }
 
-export const uploadAssessmentData = async (req: Request, res: Response): Promise<void> => {
-    const assessment_id = req.body.assessment_id
-    const results = req.body.results
+        const recordsToInsert = []
 
-    try {
-        const assessment = await Assessment.findOne({
-            where: { id: assessment_id },
-        })
+        for (const row of scores) {
+            const { student_id, answers } = row
+            for (const [key, value] of Object.entries(answers)) {
+                const question_id = questionMap[key]
+                if (!question_id) continue // skip invalid keys
 
-        const skipped: string[] = []
-
-        for (let dt of results) {
-            const student_id = dt.person_id
-            const finalScore = dt.final_score
-            let testData = dt.result_data
-
-            if (!student_id) {
-                skipped.push(student_id)
-                continue
-            }
-
-            const student = await Student.findByPk(student_id)
-
-            if (!student) {
-                skipped.push(student_id)
-                continue
-            }
-
-            if (student) {
-                await AssessmentResult.create({
-                    student_id: student.id,
-                    assessment_id: assessment?.id,
-                    final_score: finalScore,
-                    questions: testData, // this is assumed to be a JSONB column
+                recordsToInsert.push({
+                    student_id,
+                    question_id,
+                    assessment_id,
+                    score_value: String(value),
                 })
             }
         }
 
-        //display on front end, studnets missing
+        // Insert all answers
+        await Student_Answers.bulkCreate(recordsToInsert)
+
         res.status(200).json({
-            message: "Upload complete.",
-            skippedStudents: skipped,
+            message: "Scores imported successfully",
+            inserted: recordsToInsert.length,
         })
-    } catch (e) {
-        res.status(500).json({ error: "Internal server error" })
+        return
+    } catch (err) {
+        console.error("Error importing scores:", err)
+        res.status(500).json({ message: "Server error" })
+        return
     }
 }
 
-export const getAssessmentWithStats = async (req: Request, res: Response): Promise<void> => {
+export const createQuestions = async (req: Request, res: Response): Promise<void> => {
+    const { questions, assessment_id } = req.body
+    console.log("In Create Questions")
     try {
-        const { student_id } = req.params
-
-        const student = await Student.findByPk(student_id)
-
-        if (!student) {
-            res.status(404).json({ message: "Student not found" })
+        if (!Array.isArray(questions) || !assessment_id) {
+            res.status(400).json({ message: "Invalid input format" })
             return
         }
-        type AssessmentResultWithAssessment = AssessmentResult & {
-            assessment: {
-                test_name: string
-            }
-        }
-        // Fetch the results
-        const results = (await AssessmentResult.findAll({
-            where: { student_id: student.id },
-            include: [
-                {
-                    model: Assessment,
-                    as: "assessment",
-                    attributes: ["test_name"],
-                },
-            ],
-            attributes: ["final_score", "questions", "createdAt"],
-            order: [["createdAt", "DESC"]],
-        })) as AssessmentResultWithAssessment[] // 👈 cast here
 
-        const allAssessmentResults = await Assessment.findByPk(1, {
-            include: [
-                {
-                    model: AssessmentResult,
-                },
-            ],
-        })
+        const prepared = questions.map((q) => ({
+            question_num: q.question_num,
+            text: q.text,
+            subscore_type: q.subscore_type || null,
+            category: q.category || null,
+            assessment_id,
+        }))
 
-        // Print only the dataValues for all AssessmentResults
-        const assessmentResults = allAssessmentResults?.dataValues.AssessmentResults || []
-        const dataValuesArray = assessmentResults.map((result: any) => result.dataValues)
-
-        let map = new Map()
-        for (let dt of dataValuesArray) {
-            for (let qs of dt.questions) {
-                if (qs.question_id == null) map.set(qs.question_id, qs.scores)
-                else map.set(qs.question_id, map.get(qs.question_id) + qs.score)
-            }
-        }
-
-        res.json({
-            student: student,
-            assessments: results.map((r) => ({
-                assessmentName: r.assessment.test_name,
-                resPercent: r.final_score,
-                questions: r.questions,
-            })),
-            // questionAverages: averages,
-        })
+        const inserted = await Questions.bulkCreate(prepared)
+        res.status(200).json({ message: "Questions imported successfully", inserted })
     } catch (e) {
-        res.status(500).json({ error: "Failed to add assessment results" })
+        res.status(500).json({ error: "Failed to create assessment" })
     }
 }

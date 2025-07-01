@@ -22,6 +22,13 @@ Assessment.init(
             type: DataTypes.BOOLEAN,
             defaultValue: false,
         },
+        date: {
+            type: DataTypes.DATE,
+        },
+        assessment_type: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
     },
     {
         sequelize,

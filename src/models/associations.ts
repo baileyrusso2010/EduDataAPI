@@ -14,6 +14,9 @@ import { Tier } from "./mtss/tier.model"
 import { StudentIntervention } from "./mtss/student_interventions.mode"
 import { Intervention } from "./mtss/interventions.model"
 import { Attendance } from "./attendance.model"
+import { Assessment } from "./assessments/assessment.model"
+import { Questions } from "./assessments/questions.model"
+import { Student_Answers } from "./assessments/student_answers"
 
 // Define Associations
 
@@ -31,6 +34,39 @@ Student.hasMany(Enrollment, {
 // Associations
 Attendance.belongsTo(Student, { foreignKey: "student_id" })
 Student.hasMany(Attendance, { foreignKey: "student_id", as: "Attendances" })
+
+//Assessments
+Assessment.hasMany(Questions, {
+    foreignKey: "assessment_id",
+    as: "questions",
+})
+
+Questions.belongsTo(Assessment, {
+    foreignKey: "assessment_id",
+    as: "assessment",
+})
+
+Questions.hasMany(Student_Answers, {
+    foreignKey: "question_id",
+    as: "answers",
+})
+
+Student_Answers.belongsTo(Questions, {
+    foreignKey: "question_id",
+    as: "question",
+})
+
+Student.hasMany(Student_Answers, {
+    foreignKey: "student_id",
+    as: "answers",
+})
+
+Student_Answers.belongsTo(Student, {
+    foreignKey: "student_id",
+    as: "student",
+})
+
+//end of assessments
 
 Enrollment.belongsTo(Student, {
     foreignKey: "studentID",
