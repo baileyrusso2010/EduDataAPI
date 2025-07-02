@@ -2,15 +2,17 @@ import { Model, DataTypes } from "sequelize"
 import sequelize from "../database"
 import { Student } from "./student.model"
 
-export class Student_flags extends Model {
-    declare id: number
-    declare student_number: string
-    declare iep: boolean
-    declare section_504: boolean
-    declare frl_eligible: boolean
+export class StudentFlag extends Model {
+    public id!: number
+    public student_id!: number
+    public flag_type!: string // e.g. 'low_score', 'attendance'
+    public flag_reason!: string | null
+    public is_active!: boolean
+    public created_at!: Date
+    public resolved_at!: Date | null
 }
 
-Student_flags.init(
+StudentFlag.init(
     {
         id: {
             type: DataTypes.INTEGER,
@@ -21,32 +23,41 @@ Student_flags.init(
             type: DataTypes.INTEGER,
             allowNull: false,
         },
-        iep: {
-            type: DataTypes.BOOLEAN,
+        flag_type: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        flag_reason: {
+            type: DataTypes.TEXT,
             allowNull: true,
         },
-        section_504: {
+        is_active: {
             type: DataTypes.BOOLEAN,
-            allowNull: true,
+            allowNull: false,
+            defaultValue: true,
         },
-        frl_eligible: {
-            type: DataTypes.BOOLEAN,
+        created_at: {
+            type: DataTypes.DATE,
+            defaultValue: DataTypes.NOW,
+        },
+        resolved_at: {
+            type: DataTypes.DATE,
             allowNull: true,
         },
     },
     {
         sequelize,
         tableName: "student_flags",
-        timestamps: true,
+        timestamps: false, // or true if you use Sequelize's built-in createdAt/updatedAt
     }
 )
 
-Student_flags.belongsTo(Student, {
+StudentFlag.belongsTo(Student, {
     foreignKey: "student_id",
     onDelete: "CASCADE",
 })
 
-Student.hasOne(Student_flags, {
+Student.hasMany(StudentFlag, {
     foreignKey: "student_id",
     as: "flags",
 })

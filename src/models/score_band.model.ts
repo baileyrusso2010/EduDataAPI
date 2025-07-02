@@ -45,7 +45,3 @@ ScoreBand.init(
         timestamps: true,
     }
 )
-
-// Relations
-ScoreBand.belongsTo(Assessment, { foreignKey: "assessment_id" })
-Assessment.hasMany(ScoreBand, { foreignKey: "assessment_id" })

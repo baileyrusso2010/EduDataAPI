@@ -1,10 +1,8 @@
 import { Request, Response } from "express"
 import { Student } from "../models/student.model"
 import { Attendance } from "../models/attendance.model"
-import { Student_flags } from "../models/student_flags.model"
 import { Assessment } from "../models/assessments/assessment.model"
 import { BehaviorRecord } from "../models/behavior.model"
-import { GradeBook } from "../models/grade_book.model"
 import { StudentTier } from "../models/mtss/student_tier.model"
 import { Tier } from "../models/mtss/tier.model"
 import { StudentIntervention } from "../models/mtss/student_interventions.mode"
@@ -40,16 +38,6 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
                         "location",
                         "description",
                     ],
-                },
-                {
-                    model: Student_flags,
-                    as: "flags",
-                    attributes: ["iep", "section_504", "frl_eligible"],
-                },
-                {
-                    model: GradeBook,
-                    as: "grade_book",
-                    attributes: ["term_name", "task", "department_name", "course_name", "score"],
                 },
                 {
                     model: Attendance,
@@ -94,8 +82,6 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
                 presentPercentage: presentPercentage.toFixed(2),
             },
             behavior: student.behaviors,
-            flags: student.flags,
-            grade_book: student.grade_book,
             currentTier: student.StudentTiers?.[0]?.Tier || null,
             activeInterventions:
                 student.StudentInterventions?.map((si) => ({

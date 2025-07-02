@@ -2,8 +2,6 @@ import { Model, DataTypes } from "sequelize"
 import sequelize from "../database"
 import { School } from "./school.model"
 import { BehaviorRecord } from "./behavior.model"
-import { Student_flags } from "./student_flags.model"
-import { GradeBook } from "./grade_book.model"
 import { Enrollment } from "./enrollment.model"
 import { StudentIntervention } from "./mtss/student_interventions.mode"
 import { Intervention } from "./mtss/interventions.model"
@@ -20,8 +18,6 @@ export class Student extends Model {
     declare ethnicity: string
     declare school_id: number
     declare behaviors?: BehaviorRecord[]
-    declare grade_book?: GradeBook[]
-    declare flags?: Student_flags
     declare StudentInterventions?: StudentIntervention[] // This allows `student.AssessmentResults`
     declare StudentTiers?: StudentTier[]
     declare Attendances?: Attendance[]

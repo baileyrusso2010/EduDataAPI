@@ -32,6 +32,7 @@ import mtssRoutes from "./src/routes/mtss.routes"
 import behaviorRoutes from "./src/routes/behavior.routes"
 import dataRoutes from "./src/routes/data.routes"
 import { generateFakeData } from "./src/seed/fakeData"
+import { flagLowScoreStudents } from "./src/helper/flagLowScoreStudents"
 
 //should use v1/
 app.use("/assessments", assessmentRoutes)
@@ -60,6 +61,8 @@ app.listen(PORT, async () => {
     await sequelize.sync({ alter: true })
     // await sequelize.sync({ force: true })
     // await generateFakeData()
+
+    // await flagLowScoreStudents()
 
     console.log(`Listening on PORT: ${PORT}`)
 })
