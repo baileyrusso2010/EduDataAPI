@@ -1,52 +1,41 @@
 import { Model, DataTypes } from "sequelize"
 import sequelize from "../../database"
-import { Course } from "./course.model"
-import { Term } from "./term.model"
 
-export class Score extends Model {
+export class Section extends Model {
     public id!: number
-    public student_id!: number
     public course_id!: number
-    public term_id!: number
-    public task_id!: number
-    public score!: number
-
-    // Add the Course property for association typing
-    public Course?: Course
-    public Term?: Term
+    public teacher_id!: number
+    public period!: string
+    public section_number!: number
 }
 
-Score.init(
+Section.init(
     {
         id: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true,
         },
-        student_id: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-        },
         course_id: {
             type: DataTypes.INTEGER,
             allowNull: false,
         },
-        term_id: {
+        teacher_id: {
             type: DataTypes.INTEGER,
             allowNull: false,
         },
-        task_id: {
-            type: DataTypes.INTEGER,
+        period: {
+            type: DataTypes.STRING,
             allowNull: false,
         },
-        score: {
-            type: DataTypes.FLOAT,
+        section_number: {
+            type: DataTypes.INTEGER,
             allowNull: false,
         },
     },
     {
         sequelize,
-        tableName: "scores",
+        tableName: "section",
         timestamps: false,
     }
 )

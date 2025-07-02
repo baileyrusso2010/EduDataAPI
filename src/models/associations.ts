@@ -21,10 +21,11 @@ import { School_year } from "./school_year.model"
 import { StaffSchool } from "./staff_school.model"
 import { Course } from "./grading/course.model"
 import { Department } from "./grading/department.model"
-import { Score } from "./grading/score.model"
+import { Grade } from "./grading/grade.model"
 import { Term } from "./grading/term.model"
 import { Task } from "./grading/task.model"
 import { ScoreBand } from "./score_band.model"
+import { Section } from "./grading/sections.model"
 
 StaffSchool.belongsTo(Staff, { foreignKey: "staffId", targetKey: "personID" })
 StaffSchool.belongsTo(School, { foreignKey: "SchoolId", targetKey: "id" })
@@ -35,13 +36,6 @@ School_year.hasMany(StaffSchool, { foreignKey: "SchoolId", sourceKey: "id" })
 // Student and School
 Student.belongsTo(School, { foreignKey: "school_id" })
 School.hasMany(Student, { foreignKey: "school_id", as: "students" })
-
-// Student and Enrollment
-Student.hasMany(Enrollment, {
-    foreignKey: "studentID",
-    sourceKey: "id",
-    as: "enrollments",
-})
 
 // Associations
 Attendance.belongsTo(Student, { foreignKey: "student_id" })
@@ -85,12 +79,6 @@ Assessment.hasMany(Final_Score, { foreignKey: "assessment_id" })
 
 //end of assessments
 
-Enrollment.belongsTo(Student, {
-    foreignKey: "studentID",
-    targetKey: "id",
-    as: "student",
-})
-
 // 🔗 Associations
 StudentTier.belongsTo(Student, { foreignKey: "studentId" })
 Student.hasMany(StudentTier, { foreignKey: "studentId" })
@@ -113,15 +101,24 @@ Assessment.hasMany(ScoreBand, { foreignKey: "assessment_id" })
 Course.belongsTo(Department, { foreignKey: "department_id" })
 Department.hasMany(Course, { foreignKey: "department_id" })
 
-Score.belongsTo(Course, { foreignKey: "course_id" })
-Score.belongsTo(Task, { foreignKey: "task_id" })
-Score.belongsTo(Term, { foreignKey: "term_id" })
-Score.belongsTo(Student, { foreignKey: "student_id" }) // ✅ You need this
+// Associations
+Student.hasMany(Enrollment, { foreignKey: "student_id" })
+Enrollment.belongsTo(Student, { foreignKey: "student_id" })
 
-Student.hasMany(Score, { foreignKey: "student_id" })
-Course.hasMany(Score, { foreignKey: "course_id" })
-Task.hasMany(Score, { foreignKey: "task_id" })
-Term.hasMany(Score, { foreignKey: "term_id" })
+Course.belongsTo(Department, { foreignKey: "department_id" })
+Department.hasMany(Course, { foreignKey: "department_id" })
+
+Section.belongsTo(Course, { foreignKey: "course_id" })
+Course.hasMany(Section, { foreignKey: "course_id" })
+
+Enrollment.belongsTo(Section, { foreignKey: "section_id" })
+Section.hasMany(Enrollment, { foreignKey: "section_id" })
+
+Grade.belongsTo(Enrollment, { foreignKey: "enrollment_id" })
+Grade.belongsTo(Term, { foreignKey: "term_id" })
+Grade.belongsTo(Task, { foreignKey: "task_id" })
+
+Enrollment.hasMany(Grade, { foreignKey: "enrollment_id" })
 
 // Export models (optional, if you want to import them from this file in other parts of your app)
-export { Student, Teacher, Enrollment, School, Score, Course, Department, Term, Task }
+export { Student, Teacher, Enrollment, School, Grade, Course, Department, Term, Task }

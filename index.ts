@@ -31,6 +31,7 @@ import teacherRoutes from "./src/routes/teacher.routes"
 import mtssRoutes from "./src/routes/mtss.routes"
 import behaviorRoutes from "./src/routes/behavior.routes"
 import dataRoutes from "./src/routes/data.routes"
+import sectionRoutes from "./src/routes/sections.routes"
 import { generateFakeData } from "./src/seed/fakeData"
 import { flagLowScoreStudents } from "./src/helper/flagLowScoreStudents"
 
@@ -43,6 +44,7 @@ app.use("/student", studentRoutes)
 app.use("/teacher", teacherRoutes)
 app.use("/mtss", mtssRoutes)
 app.use("/data", dataRoutes)
+app.use("/sections", sectionRoutes)
 
 app.get("/", (req, res) => {
     res.send("Welcome to the School Management API")

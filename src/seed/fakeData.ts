@@ -1,10 +1,11 @@
 import { faker } from "@faker-js/faker"
 import { School } from "../models/school.model"
 import { Teacher } from "../models/teacher.model"
-import { Course, Department, Enrollment, Score, Task, Term } from "../models/associations"
+import { Course, Department, Enrollment, Grade, Task, Term } from "../models/associations"
 import { Student } from "../models/associations"
 import { School_year } from "../models/school_year.model"
 import sequelize from "../database"
+import { Section } from "../models/grading/sections.model"
 
 function getRandomItem<T>(arr: T[]): T {
     return arr[Math.floor(Math.random() * arr.length)]
@@ -120,20 +121,23 @@ async function generateSchools(): Promise<School[]> {
 //     }
 // }
 
-export async function generateFakeScoresData(students: Student[], count: number = 50) {
-    await School_year.create({
+export async function generateFakeScoresData(
+    teachers: Teacher[],
+    students: Student[],
+    count: number = 50
+) {
+    const year = await School_year.create({
         year_name: "2024-2025",
-        start_date: new Date("08/01/2024"),
-        end_date: new Date("06/01/2025"),
+        start_date: new Date("2024-08-01"),
+        end_date: new Date("2025-06-01"),
         active: true,
     })
-    // Step 1: Create or fetch fixed departments
+
     const departments = await Department.bulkCreate(
         [{ name: "Math" }, { name: "Science" }, { name: "Social Studies" }, { name: "English" }],
         { ignoreDuplicates: true, returning: true }
     )
 
-    // Step 2: Create some courses for those departments
     const courses = await Promise.all(
         departments.map((dept) =>
             Course.create({
@@ -147,35 +151,58 @@ export async function generateFakeScoresData(students: Student[], count: number 
         )
     )
 
-    // Step 3: Create a few terms and tasks
+    const sections = await Promise.all(
+        courses.map((course) =>
+            Section.create({
+                course_id: course.id,
+                teacher_id: faker.helpers.arrayElement(teachers).id,
+                period: faker.number.int({ min: 1, max: 8 }).toString(),
+                section_number: String(faker.number.int({ min: 1, max: 8 })),
+            })
+        )
+    )
+
     const terms = await Term.bulkCreate(
         [
-            { name: "Q1", school_year: "2024–2025" },
-            { name: "Q2", school_year: "2024–2025" },
-            { name: "Q3", school_year: "2024–2025" },
-            { name: "Q4", school_year: "2024–2025" },
+            { name: "Q1", school_year: "2024-2025" },
+            { name: "Q2", school_year: "2024-2025" },
+            { name: "Q3", school_year: "2024-2025" },
+            { name: "Q4", school_year: "2024-2025" },
         ],
         { returning: true }
     )
 
-    const tasks = await Task.bulkCreate([{ type: "Quarter" }, { type: "Interim" }], {
-        returning: true,
-    })
+    const tasks = await Task.bulkCreate(
+        [
+            { name: "Quarter", type: "Quarter" },
+            { name: "Interim", type: "Interim" },
+            { name: "Final Grade", type: "Final Grade" },
+        ],
+        { returning: true }
+    )
 
-    // Step 5: Generate scores for each student
     for (const student of students) {
         for (let i = 0; i < count; i++) {
-            await Score.create({
+            const section = faker.helpers.arrayElement(sections)
+            const enrollment = await Enrollment.create({
                 student_id: student.id,
-                course_id: faker.helpers.arrayElement(courses).id,
+                section_id: section.id,
+                enrollment_start_date: new Date("2024-09-01"),
+                enrollment_end_date: new Date("2025-06-01"),
+                enrollment_start_status: "Active",
+                enrollment_end_status: "Enrolled",
+            })
+
+            await Grade.create({
+                enrollment_id: enrollment.id,
+                term_id: faker.helpers.arrayElement(terms).id,
                 task_id: faker.helpers.arrayElement(tasks).id,
-                term_id: (faker.helpers.arrayElement(terms) as (typeof terms)[number]).id,
                 score: faker.number.float({ min: 55, max: 100 }),
             })
         }
     }
 
-    console.log(`✅ Inserted ${students.length * count} scores for ${students.length} students.`)
+    console.log(`✅ Inserted ${students.length * count} grades for ${students.length} students.`)
 }
 
 export async function generateFakeData() {
@@ -184,5 +211,5 @@ export async function generateFakeData() {
     const teachers = await generateTeachers(schools) // Teachers are linked to sections, not directly to schools
     const students = await generateStudents(schools)
     // await generateFlags(students)
-    await generateFakeScoresData(students)
+    await generateFakeScoresData(teachers, students)
 }
