@@ -1,9 +1,18 @@
 import { Model, DataTypes } from "sequelize"
 import sequelize from "../../database"
+import { Assessment } from "./assessment.model"
 
-export class Final_score extends Model {}
+export class Final_Score extends Model {
+    public id!: number
+    public student_id!: number
+    public assessment_id!: number
+    public score_value!: string
 
-Final_score.init(
+    // Association
+    public Assessment?: Assessment
+}
+
+Final_Score.init(
     {
         id: {
             type: DataTypes.INTEGER,

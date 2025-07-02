@@ -17,6 +17,7 @@ import { Attendance } from "./attendance.model"
 import { Assessment } from "./assessments/assessment.model"
 import { Questions } from "./assessments/questions.model"
 import { Student_Answers } from "./assessments/student_answers"
+import { Final_Score } from "./assessments/final_score.model"
 
 // Define Associations
 
@@ -65,6 +66,11 @@ Student_Answers.belongsTo(Student, {
     foreignKey: "student_id",
     as: "student",
 })
+
+Final_Score.belongsTo(Student, { foreignKey: "student_id" })
+Final_Score.belongsTo(Assessment, { foreignKey: "assessment_id" })
+Student.hasMany(Final_Score, { foreignKey: "student_id" })
+Assessment.hasMany(Final_Score, { foreignKey: "assessment_id" })
 
 //end of assessments
 

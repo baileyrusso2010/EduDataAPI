@@ -4,6 +4,7 @@ import { ScoreBand } from "../models/score_band.model"
 import { Student } from "../models/student.model"
 import { Questions } from "../models/assessments/questions.model"
 import { Student_Answers } from "../models/assessments/student_answers"
+import { Final_Score } from "../models/assessments/final_score.model"
 
 export const getAllAssessmnets = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -31,7 +32,6 @@ export const createAssessment = async (req: Request, res: Response): Promise<voi
         res.status(500).json({ error: "Failed to create assessment" })
     }
 }
-
 export const createScores = async (req: Request, res: Response): Promise<void> => {
     try {
         const { assessment_id, scores } = req.body
@@ -41,29 +41,28 @@ export const createScores = async (req: Request, res: Response): Promise<void> =
             return
         }
 
-        // Fetch all questions for this assessment
-        const questions = await Questions.findAll({
-            where: { assessment_id },
-        })
-
+        const questions = await Questions.findAll({ where: { assessment_id } })
         if (!questions.length) {
             res.status(404).json({ message: "No questions found for assessment" })
             return
         }
 
-        // Build question_num to id map
         const questionMap: Record<string, number> = {}
         for (const q of questions) {
             questionMap[`question_${q.question_num}`] = q.id
         }
 
-        const recordsToInsert = []
+        const recordsToInsert: any[] = []
+        const finalScoreInserts: any[] = []
+        const failedStudents: Set<number> = new Set()
 
         for (const row of scores) {
-            const { student_id, answers } = row
+            const { student_id, answers, final_scores } = row
+            let hasAnswer = false
+
             for (const [key, value] of Object.entries(answers)) {
                 const question_id = questionMap[key]
-                if (!question_id) continue // skip invalid keys
+                if (!question_id) continue
 
                 recordsToInsert.push({
                     student_id,
@@ -71,21 +70,71 @@ export const createScores = async (req: Request, res: Response): Promise<void> =
                     assessment_id,
                     score_value: String(value),
                 })
+                hasAnswer = true
+            }
+
+            if (Array.isArray(final_scores) && final_scores.length > 0) {
+                for (const final of final_scores) {
+                    if (!final.score_type || final.score_value == null) continue
+
+                    finalScoreInserts.push({
+                        student_id,
+                        assessment_id,
+                        score_value: String(final.score_value),
+                    })
+                }
+                hasAnswer = true
+            }
+
+            if (!hasAnswer) {
+                failedStudents.add(student_id)
             }
         }
 
-        // Insert all answers
-        await Student_Answers.bulkCreate(recordsToInsert)
+        // Insert answers
+        let answersInserted = 0
+        if (recordsToInsert.length > 0) {
+            try {
+                const inserted = await Student_Answers.bulkCreate(recordsToInsert, {
+                    ignoreDuplicates: true,
+                })
+                answersInserted = Array.isArray(inserted) ? inserted.length : recordsToInsert.length
+            } catch (err) {
+                for (const record of recordsToInsert) {
+                    try {
+                        await Student_Answers.create(record)
+                        answersInserted++
+                    } catch {
+                        failedStudents.add(record.student_id)
+                    }
+                }
+            }
+        }
+
+        // Insert final scores
+        let finalScoresInserted = 0
+        if (finalScoreInserts.length > 0) {
+            await Promise.all(
+                finalScoreInserts.map(async (score) => {
+                    try {
+                        await Final_Score.upsert(score)
+                        finalScoresInserted++
+                    } catch {
+                        failedStudents.add(score.student_id)
+                    }
+                })
+            )
+        }
 
         res.status(200).json({
             message: "Scores imported successfully",
-            inserted: recordsToInsert.length,
+            answersInserted,
+            finalScoresInserted,
+            failedStudents: Array.from(failedStudents),
         })
-        return
     } catch (err) {
         console.error("Error importing scores:", err)
         res.status(500).json({ message: "Server error" })
-        return
     }
 }
 
@@ -110,5 +159,39 @@ export const createQuestions = async (req: Request, res: Response): Promise<void
         res.status(200).json({ message: "Questions imported successfully", inserted })
     } catch (e) {
         res.status(500).json({ error: "Failed to create assessment" })
+    }
+}
+
+export const insertScoreBands = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { assessment_id, bands } = req.body
+
+        if (!assessment_id || !Array.isArray(bands) || bands.length === 0) {
+            res.status(400).json({ message: "Invalid request format" })
+            return
+        }
+
+        // Optional: Delete existing bands to replace them
+        await ScoreBand.destroy({
+            where: {
+                assessment_id,
+            },
+        })
+
+        // Prepare new records
+        const records = bands.map((band) => ({
+            assessment_id,
+            label: band.label,
+            min_score: band.min_score,
+            max_score: band.max_score,
+            color: band.color_hex,
+        }))
+
+        await ScoreBand.bulkCreate(records)
+
+        res.status(200).json({ message: "Score bands saved successfully", count: records.length })
+    } catch (err) {
+        console.error("Error saving score bands:", err)
+        res.status(500).json({ message: "Server error" })
     }
 }

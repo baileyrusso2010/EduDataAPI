@@ -20,10 +20,6 @@ Courses.init(
             type: DataTypes.STRING,
             allowNull: false,
         },
-        course_dept: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
     },
     {
         sequelize,
