@@ -8,6 +8,9 @@ import { Tier } from "../models/mtss/tier.model"
 import { StudentIntervention } from "../models/mtss/student_interventions.mode"
 import { Intervention } from "../models/mtss/interventions.model"
 import { Final_Score } from "../models/assessments/final_score.model"
+import { Grade } from "../models/grading/grade.model"
+import { Course, Enrollment, Task, Term } from "../models/associations"
+import { Section } from "../models/grading/sections.model"
 
 export const getProfile = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -52,6 +55,38 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
             return
         }
 
+        const enrollmentsWithGrades = await Enrollment.findAll({
+            where: { student_id: studentId },
+            include: [
+                {
+                    model: Section,
+                    include: [Course],
+                },
+                {
+                    model: Grade,
+                    include: [Term, Task],
+                },
+            ],
+        })
+
+        // ✅ Format Grades
+        const grades = enrollmentsWithGrades.flatMap((enrollment) =>
+            enrollment.Grades?.map((grade) => ({
+                course: enrollment.Section?.Course?.name || "Unknown Course",
+                section_id: enrollment.section_id,
+                term: grade.Term?.name || "N/A",
+                task: grade.Task?.type || "N/A",
+                score: grade.score,
+            }))
+        )
+
+        const validScores = grades.map((g) => g?.score).filter((score) => typeof score === "number")
+
+        const averageScore =
+            validScores.length > 0
+                ? validScores.reduce((sum, s) => sum + (s ?? 0), 0) / validScores.length
+                : null
+
         // Attendance calculation
         const totalAttendance = student.Attendances?.length || 0
         const presentCount =
@@ -82,13 +117,15 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
                 presentPercentage: presentPercentage.toFixed(2),
             },
             behavior: student.behaviors,
+            grades: grades,
+            final_score: averageScore,
             currentTier: student.StudentTiers?.[0]?.Tier || null,
-            activeInterventions:
-                student.StudentInterventions?.map((si) => ({
-                    ...si.Intervention?.dataValues,
-                    start_date: si.start_date,
-                    end_date: si.end_date,
-                })) || [],
+            // activeInterventions:
+            //     student.StudentInterventions?.map((si) => ({
+            //         ...si.Intervention?.dataValues,
+            //         start_date: si.start_date,
+            //         end_date: si.end_date,
+            //     })) || [],
             assessments,
         })
     } catch (e) {

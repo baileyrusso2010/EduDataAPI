@@ -1,5 +1,6 @@
 import { Op } from "sequelize"
 import { Score } from "../models/associations"
+import {score}
 import { StudentFlag } from "../models/student_flags.model"
 import { Student } from "../models/associations"
 import { Course } from "../models/associations"

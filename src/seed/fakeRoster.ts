@@ -40,45 +40,29 @@ async function generateFakeData() {
     await sequelize.close()
 }
 
-async function generateFakeGrades() {
-    for (const student of await Student.findAll()) {
-        for (let period = 1; period <= 6; period++) {
-            await GradeBook.create({
-                student_id: student.id,
-                school_year: "2024-2025",
-                term_name: faker.helpers.arrayElement(["QTR 1", "QTR 2", "QTR3", "QTR4"]),
-                grade: faker.helpers.arrayElement(["10", "11", "12"]),
-                task: faker.helpers.arrayElement(["Quarter Grades", "Interim"]),
-                department_name: faker.helpers.arrayElement(["Science", "Math", "P/E"]),
-                course_name: faker.helpers.arrayElement([
-                    "Math",
-                    "English",
-                    "Science",
-                    "History",
-                    "Art",
-                    "Physical Education",
-                ]),
-                score: faker.helpers.arrayElement(["97", "56", "73", "83", "P", "F"]),
-            })
-        }
-    }
-}
-
-async function generateFakeAttendance() {
-    for (const student of await Student.findAll()) {
-        const date = faker.date.recent({ days: 10 }) // a random date in past 10 days
-
-        for (let period = 1; period <= 6; period++) {
-            await Attendance.create({
-                student_id: student.id,
-                date,
-                school_year_id: faker.number.int({ min: 1, max: 4 }), // Assuming school_year_id ranges from 1 to 4
-                sectionID: faker.number.int({ min: 1, max: 10 }), // Assuming sectionID ranges from 1 to 10
-                status: faker.helpers.arrayElement(["present", "absent", "tardy"]),
-            })
-        }
-    }
-}
+// async function generateFakeGrades() {
+//     for (const student of await Student.findAll()) {
+//         for (let period = 1; period <= 6; period++) {
+//             await GradeBook.create({
+//                 student_id: student.id,
+//                 school_year: "2024-2025",
+//                 term_name: faker.helpers.arrayElement(["QTR 1", "QTR 2", "QTR3", "QTR4"]),
+//                 grade: faker.helpers.arrayElement(["10", "11", "12"]),
+//                 task: faker.helpers.arrayElement(["Quarter Grades", "Interim"]),
+//                 department_name: faker.helpers.arrayElement(["Science", "Math", "P/E"]),
+//                 course_name: faker.helpers.arrayElement([
+//                     "Math",
+//                     "English",
+//                     "Science",
+//                     "History",
+//                     "Art",
+//                     "Physical Education",
+//                 ]),
+//                 score: faker.helpers.arrayElement(["97", "56", "73", "83", "P", "F"]),
+//             })
+//         }
+//     }
+// }
 
 async function generateFakeBehavior() {
     for (let i = 0; i < 50; i++) {
@@ -110,7 +94,7 @@ async function generateFakeBehavior() {
 
 import { Assessment } from "../models/assessments/assessment.model"
 import { ScoreBand } from "../models/score_band.model"
-import { GradeBook } from "../models/grade_book.model"
+// import { GradeBook } from "../models/grade_book.model"
 
 /**
  * Creates a new assessment and generates fake results for each student.
@@ -185,9 +169,9 @@ async function createBandScores() {
 //export generate fake data
 export {
     generateFakeData,
-    generateFakeAttendance,
+    // generateFakeAttendance,
     generateFakeBehavior,
     createAssessmentWithResults,
     createBandScores,
-    generateFakeGrades,
+    // generateFakeGrades,
 }

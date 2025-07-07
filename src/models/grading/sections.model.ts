@@ -1,5 +1,6 @@
 import { Model, DataTypes } from "sequelize"
 import sequelize from "../../database"
+import { Course } from "./course.model"
 
 export class Section extends Model {
     public id!: number
@@ -7,6 +8,8 @@ export class Section extends Model {
     public teacher_id!: number
     public period!: string
     public section_number!: number
+
+    public Course?: Course
 }
 
 Section.init(

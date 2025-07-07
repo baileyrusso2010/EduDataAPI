@@ -41,6 +41,9 @@ School.hasMany(Student, { foreignKey: "school_id", as: "students" })
 Attendance.belongsTo(Student, { foreignKey: "student_id" })
 Student.hasMany(Attendance, { foreignKey: "student_id", as: "Attendances" })
 
+Attendance.belongsTo(Section, { foreignKey: "section_id" })
+Section.hasMany(Attendance, { foreignKey: "section_id" })
+
 //Assessments
 Assessment.hasMany(Questions, {
     foreignKey: "assessment_id",

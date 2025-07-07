@@ -6,6 +6,7 @@ import { Student } from "../models/associations"
 import { School_year } from "../models/school_year.model"
 import sequelize from "../database"
 import { Section } from "../models/grading/sections.model"
+import { Attendance } from "../models/attendance.model"
 
 function getRandomItem<T>(arr: T[]): T {
     return arr[Math.floor(Math.random() * arr.length)]
@@ -205,6 +206,22 @@ export async function generateFakeScoresData(
     console.log(`✅ Inserted ${students.length * count} grades for ${students.length} students.`)
 }
 
+async function generateFakeAttendance() {
+    for (const student of await Student.findAll()) {
+        const date = faker.date.recent({ days: 10 }) // a random date in past 10 days
+
+        for (let period = 1; period <= 6; period++) {
+            await Attendance.create({
+                student_id: student.id,
+                date,
+                school_year_id: faker.number.int({ min: 1, max: 4 }), // Assuming school_year_id ranges from 1 to 4
+                section_id: faker.number.int({ min: 1, max: 4 }), // Assuming sectionID ranges from 1 to 10
+                status: faker.helpers.arrayElement(["present", "absent", "tardy"]),
+            })
+        }
+    }
+}
+
 export async function generateFakeData() {
     const schools = await generateSchools()
     await generateSchoolYears()
@@ -212,4 +229,5 @@ export async function generateFakeData() {
     const students = await generateStudents(schools)
     // await generateFlags(students)
     await generateFakeScoresData(teachers, students)
+    await generateFakeAttendance()
 }

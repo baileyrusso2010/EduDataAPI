@@ -1,6 +1,8 @@
 // models/enrollment.model.ts
 import { Model, DataTypes } from "sequelize"
 import sequelize from "../database" // Adjust path as needed
+import { Grade, Student } from "./associations"
+import { Section } from "./grading/sections.model"
 
 // ENROLLMENT
 export class Enrollment extends Model {
@@ -11,6 +13,10 @@ export class Enrollment extends Model {
     public enrollment_end_date!: Date | null
     public enrollment_start_status!: string
     public enrollment_end_status!: string
+
+    public Grades?: Grade[] // allow undefined if not always eager-loaded
+    public Section?: Section
+    public Student?: Student
 }
 
 Enrollment.init(
