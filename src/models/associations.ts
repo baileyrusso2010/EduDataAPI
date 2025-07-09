@@ -96,6 +96,9 @@ StudentIntervention.belongsTo(Intervention, { foreignKey: "interventionId" })
 StudentIntervention.belongsTo(Student, { foreignKey: "studentId" })
 Student.hasMany(StudentIntervention, { foreignKey: "studentId" })
 
+Intervention.belongsTo(StudentTier, { foreignKey: "student_tier_id", as: "studentTier" })
+StudentTier.hasMany(Intervention, { foreignKey: "student_tier_id", as: "interventions" })
+
 //score band
 ScoreBand.belongsTo(Assessment, { foreignKey: "assessment_id" })
 Assessment.hasMany(ScoreBand, { foreignKey: "assessment_id" })

@@ -28,10 +28,15 @@ Intervention.init(
             type: DataTypes.STRING,
             allowNull: false,
         },
-        tier_level: {
-            type: DataTypes.INTEGER, // 2 or 3
+        student_tier_id: {
+            //this will reference what tier plan it is for
+            type: DataTypes.INTEGER,
             allowNull: false,
         },
+        // tier_level: {
+        //     type: DataTypes.INTEGER, // 2 or 3
+        //     allowNull: false,
+        // },
         frequency: {
             type: DataTypes.STRING, // e.g. "3x/week", "Daily"
         },
