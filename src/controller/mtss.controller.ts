@@ -6,7 +6,6 @@ import { StudentTier } from "../models/mtss/student_tier.model"
 import { Intervention } from "../models/mtss/interventions.model"
 import { StudentIntervention } from "../models/mtss/student_interventions.mode"
 import sequelize from "sequelize"
-import { O } from "@faker-js/faker/dist/airline-BUL6NtOJ"
 
 export const getStudentsInTier = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -18,6 +17,12 @@ export const getStudentsInTier = async (req: Request, res: Response): Promise<vo
                     model: StudentTier,
                     as: "student_tier",
                     where: { tierID: tierNum }, //gets specific tier
+                    include: [
+                        {
+                            model: Intervention,
+                            as: "interventions", // must match the alias in hasMany
+                        },
+                    ],
                 },
             ],
         })
@@ -25,6 +30,42 @@ export const getStudentsInTier = async (req: Request, res: Response): Promise<vo
         res.status(200).send(students)
     } catch (e) {
         res.status(500).json({ error: "Error Obtaining students tier" })
+    }
+}
+
+export const getTier = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { studentId } = req.params
+        const { active } = req.query as any //optional will only get active
+
+        let filter = {} as any
+        if (active == 1) {
+            filter.end_date = null
+        }
+
+        const students = await Student.findAll({
+            include: [
+                {
+                    model: StudentTier,
+                    as: "student_tier",
+                    where: filter, //gets specific tier
+                    include: [
+                        {
+                            model: Intervention,
+                            as: "interventions",
+                        },
+                    ],
+                },
+            ],
+            where: {
+                id: studentId,
+            },
+        })
+
+        res.status(200).send(students)
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({ error: "Error Obtaining tier" })
     }
 }
 

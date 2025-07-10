@@ -1,12 +1,12 @@
-import express, { Router } from "express";
+import express, { Router } from "express"
 import {
-  getAttendanceIndividual,
-  getAttendanceIndividualData,
-} from "../controller/attendance.controller";
+    getAttendanceIndividual,
+    getAttendanceIndividualSummary,
+} from "../controller/attendance.controller"
 
-const router: Router = express.Router();
+const router: Router = express.Router()
 
-router.get("/:student_number", getAttendanceIndividual);
-router.get("/data/:student_number", getAttendanceIndividualData);
+router.get("/stats/:student_number", getAttendanceIndividual)
+router.get("/summary/:student_number", getAttendanceIndividualSummary)
 
-export default router;
+export default router

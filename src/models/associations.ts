@@ -84,7 +84,7 @@ Assessment.hasMany(Final_Score, { foreignKey: "assessment_id" })
 
 // 🔗 Associations
 StudentTier.belongsTo(Student, { foreignKey: "studentId" })
-Student.hasMany(StudentTier, { foreignKey: "studentId" })
+Student.hasMany(StudentTier, { foreignKey: "studentId", as: "student_tier" })
 
 StudentTier.belongsTo(Tier, { foreignKey: "tierId" })
 Tier.hasMany(StudentTier, { foreignKey: "tierId" })
