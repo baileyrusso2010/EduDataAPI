@@ -6,6 +6,42 @@ import { Questions } from "../models/assessments/questions.model"
 import { Student_Answers } from "../models/assessments/student_answers"
 import { Final_Score } from "../models/assessments/final_score.model"
 
+export const getStudentAssessments = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const studentId = req.params.id
+        if (!studentId) {
+            res.status(400).json({ error: "Student ID is required" })
+            return
+        }
+
+        const assessments = await Assessment.findAll({
+            include: [
+                {
+                    model: Final_Score,
+                    as: "Final_Scores",
+                    where: { student_id: studentId },
+                },
+                {
+                    model: Questions,
+                    as: "questions",
+                    include: [
+                        {
+                            model: Student_Answers,
+                            as: "answers",
+                            where: { student_id: studentId },
+                        },
+                    ],
+                },
+            ],
+        })
+
+        res.status(200).json(assessments)
+    } catch (e) {
+        console.error("Error getting student assessments:", e)
+        res.status(500).json({ error: "Failed to get assessment scores" })
+    }
+}
+
 export const getAllAssessmnets = async (req: Request, res: Response): Promise<void> => {
     try {
         const results = await Assessment.findAll({})
@@ -158,6 +194,7 @@ export const createQuestions = async (req: Request, res: Response): Promise<void
         const inserted = await Questions.bulkCreate(prepared)
         res.status(200).json({ message: "Questions imported successfully", inserted })
     } catch (e) {
+        console.error("Error creating questions:", e)
         res.status(500).json({ error: "Failed to create assessment" })
     }
 }

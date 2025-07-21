@@ -4,12 +4,14 @@ import {
     createQuestions,
     createScores,
     getAllAssessmnets,
+    getStudentAssessments,
     insertScoreBands,
 } from "../controller/assessment.controller" //  named import
 
 const router: Router = express.Router()
 
 router.get("/", getAllAssessmnets)
+router.get("/student/:id", getStudentAssessments)
 router.post("/create", createAssessment)
 router.post("/createQuestions", createQuestions)
 router.post("/scores", createScores)

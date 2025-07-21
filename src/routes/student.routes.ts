@@ -5,6 +5,4 @@ const router: Router = express.Router()
 
 router.get("/search", getStudent)
 
-
 export default router
-

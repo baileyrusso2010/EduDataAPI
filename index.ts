@@ -33,6 +33,8 @@ import behaviorRoutes from "./src/routes/behavior.routes"
 import dataRoutes from "./src/routes/data.routes"
 import sectionRoutes from "./src/routes/sections.routes"
 import gradeRoutes from "./src/routes/grades.routes"
+import schoolRoutes from "./src/routes/school.routes"
+import schoolStatsRoutes from "./src/routes/schoolStats.routes"
 import { generateFakeData } from "./src/seed/fakeData"
 import { flagLowScoreStudents } from "./src/helper/flagLowScoreStudents"
 
@@ -47,6 +49,8 @@ app.use("/mtss", mtssRoutes)
 app.use("/data", dataRoutes)
 app.use("/sections", sectionRoutes)
 app.use("/grades", gradeRoutes)
+app.use("/school", schoolRoutes)
+app.use("/stats", schoolRoutes)
 
 app.get("/", (req, res) => {
     res.send("Welcome to the School Management API")
@@ -63,8 +67,8 @@ app.listen(PORT, async () => {
         })
 
     await sequelize.sync({ alter: true })
-    //   await sequelize.sync({ force: true });
-    //   await generateFakeData();
+    // await sequelize.sync({ force: true })
+    // await generateFakeData()
 
     // await flagLowScoreStudents()
 
