@@ -2,10 +2,12 @@ import express, { Router } from "express"
 import {
     getAttendanceIndividual,
     getAttendanceIndividualSummary,
+    getAttendanceSummary,
 } from "../controller/attendance.controller"
 
 const router: Router = express.Router()
 
+router.get("/summary", getAttendanceSummary)
 router.get("/stats/:student_number", getAttendanceIndividual)
 router.get("/summary/:student_number", getAttendanceIndividualSummary)
 

@@ -2,6 +2,39 @@ import { Request, Response } from "express"
 import { Attendance } from "../models/attendance.model"
 import { Op } from "sequelize"
 
+export const getAttendanceSummary = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const today = new Date()
+        const thirtyDaysAgo = new Date()
+        thirtyDaysAgo.setDate(today.getDate() - 30)
+
+        const attendance = await Attendance.findAll({
+            where: {
+                date: {
+                    [Op.between]: [thirtyDaysAgo, today],
+                },
+            },
+        })
+
+        const totalRecords = attendance.length
+        const statusCounts = attendance.reduce((acc, record) => {
+            const status = record?.status
+            acc[status] = (acc[status] || 0) + 1
+            return acc
+        }, {} as Record<string, number>)
+
+        const statusPercentages = Object.entries(statusCounts).map(([status, count]) => ({
+            status,
+            percentage: ((count / totalRecords) * 100).toFixed(2),
+        }))
+
+        res.status(200).json({ statusPercentages })
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ error: "Failed to obtain attendance" })
+    }
+}
+
 //postgres materialized views
 export const getAttendanceIndividual = async (req: Request, res: Response): Promise<void> => {
     const { student_number } = req.params

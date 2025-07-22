@@ -1,8 +1,9 @@
-import express, { Router } from "express";
-import { getBehaviorRecords } from "../controller/behavior.controller";
+import express, { Router } from "express"
+import { getBehaviorCountDay, getBehaviorRecords } from "../controller/behavior.controller"
 
-const router: Router = express.Router();
+const router: Router = express.Router()
 
-router.get("/", getBehaviorRecords);
+router.get("/", getBehaviorRecords)
+router.get("/count/day", getBehaviorCountDay)
 
-export default router;
+export default router

@@ -26,6 +26,20 @@ import { Term } from "./grading/term.model"
 import { Task } from "./grading/task.model"
 import { ScoreBand } from "./score_band.model"
 import { Section } from "./grading/sections.model"
+import { StudentFlag } from "./student_flags.model"
+import { StudentDemographic } from "./student_demographic.model"
+
+StudentFlag.belongsTo(Student, {
+    foreignKey: "student_id",
+    onDelete: "CASCADE",
+})
+
+Student.hasMany(StudentFlag, {
+    foreignKey: "student_id",
+    as: "flags",
+})
+Student.hasOne(StudentDemographic, { foreignKey: "student_id", as: "demographics" })
+StudentDemographic.belongsTo(Student, { foreignKey: "student_id" })
 
 StaffSchool.belongsTo(Staff, { foreignKey: "staffId", targetKey: "personID" })
 StaffSchool.belongsTo(School, { foreignKey: "SchoolId", targetKey: "id" })

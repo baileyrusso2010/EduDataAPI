@@ -51,13 +51,3 @@ StudentFlag.init(
         timestamps: false, // or true if you use Sequelize's built-in createdAt/updatedAt
     }
 )
-
-StudentFlag.belongsTo(Student, {
-    foreignKey: "student_id",
-    onDelete: "CASCADE",
-})
-
-Student.hasMany(StudentFlag, {
-    foreignKey: "student_id",
-    as: "flags",
-})
