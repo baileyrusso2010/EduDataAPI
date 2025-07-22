@@ -29,6 +29,10 @@ StudentTier.init(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    notes: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     assigned_date: {
       type: DataTypes.DATE,
       allowNull: false,
